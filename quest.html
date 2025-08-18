@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Treasure Hunt</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      font-family: "Press Start 2P", system-ui;
+      background: #f0f8ff;
+      overflow: hidden;
+      margin: 0;
+    }
+    #gameArea {
+      display: block;
+    }
+    #backgroundImage {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    .sprite, .chest {
+      position: absolute;
+      bottom: 15px;
+      height: 160px;
+      z-index: 1;
+    }
+    .sprite {
+      left: 0;
+      transition: left 0.3s ease-in-out;
+    }
+    .chest {
+      right: 50px;
+    }
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      z-index: 999;
+    }
+
+    #topHud {
+      position: absolute;
+      top: 0px;
+      width: 100%;
+      display: inline-flex;
+      justify-content: space-around;
+      font-size: 25px;
+      color: #ffffff;
+      z-index: 5;
+      margin-top: 40px;
+    }
+    .top-block {
+      text-align: center;
+      line-height: 1.5;
+    }
+    .top-block strong {
+      display: block;
+      font-size: 25px;
+      color: #FFD700;
+    }
+
+    #footerHud {
+      position: absolute;
+      top: 1090px;
+      width: 100%;
+      background: #0A0A66;
+      color: #FFD700;
+      font-size: 18px;
+      font-family: "Press Start 2P", system-ui;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      z-index: 4;
+      border-top: 4px solid #F5F5F5;
+    }
+
+    .footer-block {
+      text-align: center;
+      line-height: 1.4;
+      text-shadow: none;
+    }
+
+    .footer-block strong {
+      color: #FFFFFF;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">Tap anywhere to begin</div>
+  <div id="gameArea" style="position: relative; width: 100vw; height: 100vh;">
+    <div id="fireworks" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:998;"></div>
+    <div id="topHud">
+      <div class="top-block">
+        Coral<br><strong id="steps">00000</strong>
+      </div>
+      <div class="top-block">
+        Level<strong id="footerTime">Puplantis</strong>
+      </div>
+      <div class="top-block">
+        World<br><strong id="footerTime">Paw <br>Patrol</strong>
+      </div>
+    </div>
+
+    <img id="backgroundImage" src="https://bryce-kustomer.github.io/chat/chats/puplantis.png" alt="Map Background" style="z-index: 0;" />
+    <div id="blueBar" style="position: absolute; top: 0; left: 0; width: 100%; height: 200px; background: none; z-index: 1;"></div>
+    <img id="character" class="sprite" src="https://bryce-kustomer.github.io/chat/chats/coral.png" style="left: 7.7px;bottom: 150px;">
+
+ 
+  </div>
+
+  <audio id="chime" src="coin.mp3"></audio>
+
+<!-- jsDelivr  -->
+<script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
+
+<!-- UNPKG -->
+<script src="https://unpkg.com/fireworks-js@2.x/dist/index.umd.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.1/firebase-database-compat.js"></script>
+  <script defer>
+    console.log("Fireworks loaded?", typeof Fireworks); // should log 'function'
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkprKEwK4IqbK47vRkxA_5R9l84HMX-yo",
+      authDomain: "coleman-quest.firebaseapp.com",
+      databaseURL: "https://coleman-quest-default-rtdb.firebaseio.com",
+      projectId: "coleman-quest",
+      storageBucket: "coleman-quest.firebasestorage.app",
+      messagingSenderId: "1002239421984",
+      appId: "1:1002239421984:web:b45f25ffd51d9536d85645",
+      measurementId: "G-LEW29E8X1J"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const character = document.getElementById("character");
+    const chime = document.getElementById("chime");
+    const overlay = document.getElementById("overlay");
+    const STEP_WIDTH = 5;
+    const totalFrames = 6;
+
+    let currentMoveCount = 0;
+    let currentFrame = 1;
+
+    function unlockAudioAndStart() {
+      overlay.style.display = "none";
+
+      chime.play().catch(() => {});
+      chime.pause();
+      chime.currentTime = 0;
+
+      db.ref("game/moveCount").on("value", snapshot => {
+      const newCount = snapshot.val();
+      if (typeof newCount === "number" && newCount !== currentMoveCount) {
+        const dx = (newCount - currentMoveCount) * STEP_WIDTH;
+        const currentLeft = parseInt(character.style.left || "0");
+        character.style.left = (currentLeft + dx) + "px";
+
+        currentFrame++;
+        if (currentFrame > totalFrames) currentFrame = 1;
+        character.src = `https://bryce-kustomer.github.io/chat/chats/coral.png`;
+
+        currentMoveCount = newCount;
+        if (newCount === 100) {
+          showFireworks();
+        }
+
+        // Update steps with leading zeros
+        const stepsElem = document.getElementById("steps");
+        stepsElem.textContent = String(currentMoveCount).padStart(5, "0");
+
+        chime.play().catch(err => console.warn("Chime blocked:", err));
+      }
+      });
+    }
+
+    ["click", "touchstart"].forEach(event => {
+      document.body.addEventListener(event, unlockAudioAndStart, { once: true });
+    });
+
+    function showFireworks() {
+      const fireworksContainer = document.getElementById("fireworks");
+      fireworksContainer.style.display = "block";
+    
+      const fireworks = new Fireworks.default(fireworksContainer, {
+        hue: { min: 0, max: 99 },
+        acceleration: 1.02,
+        brightness: { min: 50, max: 80 },
+        decay: { min: 0.015, max: 0.03 },
+        delay: { min: 30, max: 60 },
+        explosion: 7,
+        flickering: 50,
+        intensity: 51.02,
+        friction: 0.97,
+        gravity: 1.09,
+        opacity: 0.5,
+        particles: 60,
+        traceLength: 3,
+        traceSpeed: 10,
+        rocketsPoint: {
+          min: 0.5,
+          max: 0.5
+        },
+        lineWidth: {
+          explosion: {
+            min: 8.39,
+            max: 10
+          },
+          trace: {
+            min: 0.1,
+            max: 1
+          }
+        },
+        lineStyle: 'round',
+        sound: {
+          enabled: true,
+          files: [
+            'https://fireworks.js.org/sounds/explosion0.mp3',
+            'https://fireworks.js.org/sounds/explosion1.mp3',
+            'https://fireworks.js.org/sounds/explosion2.mp3'
+          ],
+          volume: {
+            min: 38,
+            max: 55
+          }
+        }
+      });
+    
+      fireworks.start();
+    
+      setTimeout(() => {
+        fireworks.stop();
+        fireworksContainer.style.display = "none";
+      
+        // Fade in the congratulations screen
+        const message = document.getElementById("congratsMessage");
+        message.style.display = "flex";
+        setTimeout(() => {
+          message.style.opacity = "1";
+        }, 100); // slight delay to trigger transition
+      }, 15000);
+    }
+  </script>
+  <div id="congratsMessage" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: black;
+  color: #FFD700;
+  font-family: 'Press Start 2P', system-ui;
+  font-size: 24px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px;
+  line-height: 1.5;
+  opacity: 0;
+  transition: opacity 2s ease;
+">
+  You got Coral to the Puplantis! 
+  <br> Great job Evelia and Oslo!<br>
+</div>
+</body>
+</html>
