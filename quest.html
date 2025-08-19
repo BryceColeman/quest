@@ -111,9 +111,9 @@
       </div>
     </div>
 
-    <img id="backgroundImage" src="https://bryce-kustomer.github.io/chat/chats/puplantis.png" alt="Map Background" style="z-index: 0;" />
+    <img id="backgroundImage" src="https://brycecoleman.github.io/quest/puplantis.png" alt="Map Background" style="z-index: 0;" />
     <div id="blueBar" style="position: absolute; top: 0; left: 0; width: 100%; height: 200px; background: none; z-index: 1;"></div>
-    <img id="character" class="sprite" src="https://bryce-kustomer.github.io/chat/chats/coral.png" style="left: 7.7px;bottom: 150px;">
+    <img id="character" class="sprite" src="https://brycecoleman.github.io/quest/coral.png" style="left: 7.7px;bottom: 150px;">
 
  
   </div>
@@ -168,12 +168,26 @@
         character.style.left = (currentLeft + dx) + "px";
 
         currentFrame++;
+        
         if (currentFrame > totalFrames) currentFrame = 1;
-        character.src = `https://bryce-kustomer.github.io/chat/chats/coral.png`;
+        character.src = `https://brycecoleman.github.io/quest/coral.png`;
 
         currentMoveCount = newCount;
         if (newCount === 100) {
           showFireworks();
+          // Play the celebration song
+          let song = document.getElementById("celebrationSong");
+          if (!song) {
+            song = document.createElement("audio");
+            song.id = "celebrationSong";
+            song.src = "https://brycecoleman.github.io/quest/song.mp4";
+            song.style.display = "none";
+            song.loop = false;
+            document.body.appendChild(song);
+          }
+          song.currentTime = 0;
+          song.play().catch(() => {});
+
         }
 
         // Update steps with leading zeros
@@ -224,7 +238,7 @@
         },
         lineStyle: 'round',
         sound: {
-          enabled: true,
+          enabled: false,
           files: [
             'https://fireworks.js.org/sounds/explosion0.mp3',
             'https://fireworks.js.org/sounds/explosion1.mp3',
