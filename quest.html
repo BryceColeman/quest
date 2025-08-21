@@ -101,19 +101,19 @@
     <div id="fireworks" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:998;"></div>
     <div id="topHud">
       <div class="top-block">
-        Coral<br><strong id="steps">00000</strong>
+        Bluey & Bingo<br><strong id="steps">00000</strong>
       </div>
       <div class="top-block">
-        Level<strong id="footerTime">Puplantis</strong>
+        Level<strong id="footerTime">Backyard</strong>
       </div>
       <div class="top-block">
-        World<br><strong id="footerTime">Paw <br>Patrol</strong>
+        World<br><strong id="footerTime">Bluey</strong>
       </div>
     </div>
 
-    <img id="backgroundImage" src="https://brycecoleman.github.io/quest/puplantis.png" alt="Map Background" style="z-index: 0;" />
+    <img id="backgroundImage" src="https://brycecoleman.github.io/quest/bluey_background.png" alt="Map Background" style="z-index: 0;" />
     <div id="blueBar" style="position: absolute; top: 0; left: 0; width: 100%; height: 200px; background: none; z-index: 1;"></div>
-    <img id="character" class="sprite" src="https://brycecoleman.github.io/quest/coral.png" style="left: 7.7px;bottom: 150px;">
+    <img id="character" class="sprite" src="https://brycecoleman.github.io/quest/sprites.png" style="left: 7.7px;bottom: 150px;">
 
  
   </div>
@@ -170,10 +170,10 @@
         currentFrame++;
         
         if (currentFrame > totalFrames) currentFrame = 1;
-        character.src = `https://brycecoleman.github.io/quest/coral.png`;
+        character.src = `https://brycecoleman.github.io/quest/sprites.png`;
 
         currentMoveCount = newCount;
-        if (newCount === 100) {
+        if (newCount === 99) {
           showFireworks();
           // Play the celebration song
           let song = document.getElementById("celebrationSong");
